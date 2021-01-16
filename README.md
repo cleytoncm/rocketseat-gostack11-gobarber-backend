@@ -1,2 +1,3 @@
-# rocketseat-gostack11-gobarber-backend
-Projeto desenvolvimento durante o Bootcamp utilizando NodeJS.
+# Instalação do Postgres
+
+`docker run --name gostack_postgres -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres`
