@@ -1,8 +1,8 @@
 import { Router } from 'express';
+import { container } from 'tsyringe';
 import multer from 'multer';
 import uploadConfig from '@config/upload';
 
-import UsersRepository from '../../typeorm/repositories/UsersRepository';
 import CreateUserService from '@modules/users/services/CreateUserService';
 import UpdateUserAvatarService from '@modules/users/services/UpdateUserAvatarService';
 
@@ -13,27 +13,25 @@ const upload = multer(uploadConfig);
 
 usersRouter.post('/', async (request, response) => {
   const { name, email, password } = request.body;
-  const usersRepository = new UsersRepository();
+  const createUser = container.resolve(CreateUserService);
 
-    const createUser = new CreateUserService(usersRepository);
+  const user = await createUser.execute({
+    name,
+    email,
+    password,
+  });
 
-    const user = await createUser.execute({
-      name,
-      email,
-      password,
-    });
+  //delete user.password;
 
-    //delete user.password;
+  const userWithoutPassword = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  };
 
-    const userWithoutPassword = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-    };
-
-    return response.json(userWithoutPassword);
+  return response.json(userWithoutPassword);
 });
 
 usersRouter.patch(
@@ -41,8 +39,7 @@ usersRouter.patch(
   ensureAuthenticated,
   upload.single('avatar'),
   async (request, response) => {
-    const usersRepository = new UsersRepository();
-    const updateUserAvatar = new UpdateUserAvatarService(usersRepository);
+    const updateUserAvatar = container.resolve(UpdateUserAvatarService);
 
       const user = await updateUserAvatar.execute({
         user_id: request.user.id,
